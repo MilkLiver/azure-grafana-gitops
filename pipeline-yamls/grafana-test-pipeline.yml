@@ -1,0 +1,106 @@
+# pool:
+#   vmImage: 'VS2017-Win2016'
+
+# variables:
+#   solution: '**/*.sln'
+#   buildPlatform: 'Any CPU'
+#   buildConfiguration: 'Release'
+
+# steps:
+# - task: NuGetToolInstaller@0
+
+# - task: NuGetCommand@2
+#   inputs:
+#     restoreSolution: '$(solution)'
+
+# - task: VSBuild@1
+#   inputs:
+#     solution: '$(solution)'
+#     platform: '$(buildPlatform)'
+#     configuration: '$(buildConfiguration)'
+
+# - task: VSTest@2
+#   inputs:
+#     platform: '$(buildPlatform)'
+#     configuration: '$(buildConfiguration)'
+
+trigger:
+- main
+
+# jobs:
+# - job: Linux
+#   pool:
+#     vmImage: 'ubuntu-latest'
+#   steps:
+#   - script: echo hello from Linux
+# - job: macOS
+#   pool:
+#     vmImage: 'macOS-latest'
+#   steps:
+#   - script: echo hello from macOS
+# - job: Windows
+#   pool:
+#     vmImage: 'windows-latest'
+#   steps:
+#   - script: echo hello from Windows
+
+
+stages:
+- stage: stage01
+  jobs:
+  - job: job01
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: echo Testing on Linux!
+  - job: job02
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: echo Testing on Linux!
+    - script: python3 -V
+  - job: job03
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: pwd
+    - script: ls -l
+  - job: job04
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # - task: task01
+    #   displayName: 'Test - Bash'
+    #   inputs:
+    #     scriptLocation: 'scriptPath'
+    #     scriptPath: 'common/code/test-script.sh'
+    #     workingDirectory: '$(Build.SourcesDirectory)'
+    - script: pwd
+      workingDirectory: '$(System.DefaultWorkingDirectory)/F01'
+    - script: ls -l
+      workingDirectory: '$(System.DefaultWorkingDirectory)/F01'
+
+
+# stages:
+# - stage: stage01
+#   jobs:
+#   - job: BuildJob
+#     steps:
+#     - script: echo Building!
+# - stage: stage02
+#   jobs:
+#   - job: TestOnWindows
+#     pool:
+#       vmImage: 'windows-latest'
+#     steps:
+#     - script: echo Testing on Windows!
+#   - job: TestOnLinux
+#     pool:
+#       vmImage: 'ubuntu-latest'
+#     steps:
+#     - script: echo Testing on Linux!
+# - stage: stage03
+#   jobs:
+#   - job: Deploy
+#     steps:
+#     - script: echo Deploying the code!

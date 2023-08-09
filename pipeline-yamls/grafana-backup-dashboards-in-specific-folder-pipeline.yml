@@ -1,0 +1,40 @@
+variables:
+  - group: "grafana-env"
+
+trigger: none
+
+stages:
+  - stage: "backup_grafana_dashboards_in_specific_folder"
+    jobs:
+      - job: "get_grafana_dashboards_in_specific_folder"
+        pool:
+          name: "PrivateNetworkAgentPool"
+          # vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - script: python3 python-scripts/grafana_backup_dashboards_in_specific_folder.py
+            workingDirectory: "$(System.DefaultWorkingDirectory)"
+            env:
+              GRAFANA_BEARER: "$(GRAFANA_BEARER)"
+          - publish: "$(System.DefaultWorkingDirectory)/grafana-backup"
+            artifact: "backup-GrafanaDashboards"
+      - job: "git_push_grafana_dashboards_in_specific_folder"
+        dependsOn: "get_grafana_dashboards_in_specific_folder"
+        pool:
+          name: "PrivateNetworkAgentPool"
+          # vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - download: current
+            artifact: "backup-GrafanaDashboards"
+          - script: "ls $(Pipeline.Workspace)"
+          - script: "ls $(Pipeline.Workspace)/backup-GrafanaDashboards"
+          - script: "rm -rf $(System.DefaultWorkingDirectory)/grafana-backup"
+          - script: "mv $(Pipeline.Workspace)/backup-GrafanaDashboards $(System.DefaultWorkingDirectory)/grafana-backup"
+          - script: git config --global user.email "dio@example.com"
+          - script: git config --global user.name "dio"
+          - script: git add -A
+          - script: git commit -m "update to newest grafana dashboards"
+          - script: git push origin HEAD:main

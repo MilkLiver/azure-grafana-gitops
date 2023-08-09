@@ -1,0 +1,40 @@
+variables:
+  - group: "grafana-env"
+
+trigger: none
+
+stages:
+  - stage: "backup_grafana_all_datasource"
+    jobs:
+      - job: "get_current_grafana_all_datasource"
+        pool:
+          name: "PrivateNetworkAgentPool"
+          # vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - script: python3 python-scripts/grafana_backup_datasource.py
+            workingDirectory: "$(System.DefaultWorkingDirectory)"
+            env:
+              GRAFANA_BEARER: "$(GRAFANA_BEARER)"
+          - publish: "$(System.DefaultWorkingDirectory)/grafana-backup"
+            artifact: "backup-GrafanaDatasource"
+      - job: "git_push_all_grafana_datasource"
+        dependsOn: "get_current_grafana_all_datasource"
+        pool:
+          name: "PrivateNetworkAgentPool"
+          # vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - download: current
+            artifact: "backup-GrafanaDatasource"
+          - script: "ls $(Pipeline.Workspace)"
+          - script: "ls $(Pipeline.Workspace)/backup-GrafanaDatasource"
+          - script: "rm -rf $(System.DefaultWorkingDirectory)/grafana-backup"
+          - script: "mv $(Pipeline.Workspace)/backup-GrafanaDatasource $(System.DefaultWorkingDirectory)/grafana-backup"
+          - script: git config --global user.email "dio@example.com"
+          - script: git config --global user.name "dio"
+          - script: git add -A
+          - script: git commit -m "update to newest grafana dashboards"
+          - script: git push origin HEAD:main

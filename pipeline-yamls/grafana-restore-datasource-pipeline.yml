@@ -1,0 +1,19 @@
+variables:
+  - group: "grafana-env"
+
+trigger: none
+
+stages:
+  - stage: "restore_grafana_all_datasource"
+    jobs:
+      - job: "restore_grafana_all_datasource_from_git"
+        pool:
+          name: "PrivateNetworkAgentPool"
+          # vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - script: python3 python-scripts/grafana_restore_datasource.py
+            workingDirectory: "$(System.DefaultWorkingDirectory)"
+            env:
+              GRAFANA_BEARER: "$(GRAFANA_BEARER)"

@@ -1,0 +1,19 @@
+variables:
+  - group: "grafana-env"
+
+trigger: none
+
+stages:
+  - stage: "restore_grafana_dashboards_in_specific_folder"
+    jobs:
+      - job: "restore_grafana_dashboards_in_specific_folder_from_git"
+        pool:
+          name: "PrivateNetworkAgentPool"
+          # vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - script: python3 python-scripts/grafana_restore_dashboards_in_specific_folder.py
+            workingDirectory: "$(System.DefaultWorkingDirectory)"
+            env:
+              GRAFANA_BEARER: "$(GRAFANA_BEARER)"
